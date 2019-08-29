@@ -249,13 +249,17 @@ rep = (line) ->
     |> eval_ast repl_env
     |> (ast) -> pr_str ast, print_readably=true
 
+
+# Define not.
+rep '(def! not (fn* (x) (if x false true)))'
+
 # Define load-file.
 rep '
 (def! load-file 
   (fn* (f)
     (eval
       (read-string
-        (str "(do " (slurp f) ")")))))'
+        (str "(do " (slurp f) "\nnil)")))))'
 
 # Parse program arguments.
 # The first two (exe and core-file) are, respectively,

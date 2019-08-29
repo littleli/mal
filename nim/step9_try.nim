@@ -79,7 +79,7 @@ proc eval(ast: MalType, env: Env): MalType =
         let
           a1 = ast.list[1]
           a2 = ast.list[2]
-        var let_env = env
+        var let_env = initEnv(env)
         case a1.kind
         of List, Vector:
           for i in countup(0, a1.list.high, 2):
@@ -172,9 +172,8 @@ proc rep(str: string): string {.discardable.} =
 
 # core.mal: defined using mal itself
 rep "(def! not (fn* (a) (if a false true)))"
-rep "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \")\")))))"
+rep "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))"
 rep "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))"
-rep "(defmacro! or (fn* (& xs) (if (empty? xs) nil (if (= 1 (count xs)) (first xs) `(let* (or_FIXME ~(first xs)) (if or_FIXME or_FIXME (or ~@(rest xs))))))))"
 
 if paramCount() >= 1:
   rep "(load-file \"" & paramStr(1) & "\")"

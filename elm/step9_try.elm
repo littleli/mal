@@ -71,7 +71,7 @@ malInit =
     , """(def! load-file
             (fn* (f)
                 (eval (read-string
-                    (str "(do " (slurp f) ")")))))"""
+                    (str "(do " (slurp f) "\nnil)")))))"""
     , """(defmacro! cond
             (fn* (& xs)
                 (if (> (count xs) 0)
@@ -80,14 +80,6 @@ malInit =
                             (nth xs 1)
                             (throw "odd number of forms to cond"))
                         (cons 'cond (rest (rest xs)))))))"""
-    , """(defmacro! or
-            (fn* (& xs)
-                (if (empty? xs)
-                    nil
-                    (if (= 1 (count xs))
-                        (first xs)
-                        `(let* (or_FIXME ~(first xs))
-                            (if or_FIXME or_FIXME (or ~@(rest xs))))))))"""
     ]
 
 
@@ -700,6 +692,8 @@ macroexpand expr =
 evalTry : List MalExpr -> Eval MalExpr
 evalTry args =
     case args of
+        [ body ] ->
+            eval body
         [ body, MalList [ MalSymbol "catch*", MalSymbol sym, handler ] ] ->
             eval body
                 |> Eval.catchError

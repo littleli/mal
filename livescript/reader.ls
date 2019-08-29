@@ -47,7 +47,7 @@ tokenizer = (str) ->
     [\s,]*                  # whitespace or commas
     ( ~@                    # special two-char ~@
     | [\[\]{}()'`~^@]       # special single char one of []{}'`~^@
-    | "(?:\\.| [^\\"])*"    # double-quoted string
+    | "(?:\\.| [^\\"])*"?   # double-quoted string
     | ;.*                   # any seq of chars starting ;
     | [^\s\[\]{}('"`,;)]+   # seq of non-special chars: symbols, numbers,
     )                       # "true", "false" and "nil".
@@ -111,8 +111,10 @@ read_atom = (reader) ->
     token = reader.peek!
     if token in constants
         {type: \const, value: reader.next!}
-    else if token[0] == '"'
+    else if token.match /^"(?:\\.|[^\\"])*"$/
         {type: \string, value: decode-string reader.next!}
+    else if token[0] == '"'
+        parse-error "expected '\"', got EOF"
     else if token.match /^-?\d+$/
         {type: \int, value: parseInt reader.next!}
     else if token != '~@' and token not in special_chars

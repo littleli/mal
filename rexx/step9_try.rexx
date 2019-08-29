@@ -144,6 +144,7 @@ eval: procedure expose values. env. err /* eval(ast) */
       when a0sym == "macroexpand" then return macroexpand(word(astval, 2), env_idx)
       when a0sym == "try*" then do
         res = eval(word(astval, 2), env_idx)
+        if words(astval) < 3 then return res
         if res == "ERR" then do
           if word(err, 1) == "__MAL_EXCEPTION__" then
             errobj = word(err, 2)
@@ -258,9 +259,8 @@ main:
 
   /* core.mal: defined using the language itself */
   x = re("(def! not (fn* (a) (if a false true)))")
-  x = re('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) ")")))))')
+  x = re('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))')
   x = re("(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw " || '"' || "odd number of forms to cond" || '"' || ")) (cons 'cond (rest (rest xs)))))))");
-  x = re("(defmacro! or (fn* (& xs) (if (empty? xs) nil (if (= 1 (count xs)) (first xs) `(let* (or_FIXME ~(first xs)) (if or_FIXME or_FIXME (or ~@(rest xs))))))))");
 
   err = ""
   if command_line_args.0 > 0 then do

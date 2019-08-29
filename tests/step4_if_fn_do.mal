@@ -18,10 +18,10 @@
 ;=>0
 (count nil)
 ;=>0
-(if (> (count (list 1 2 3)) 3) "yes" "no")
-;=>"no"
-(if (>= (count (list 1 2 3)) 3) "yes" "no")
-;=>"yes"
+(if (> (count (list 1 2 3)) 3) 89 78)
+;=>78
+(if (>= (count (list 1 2 3)) 3) 89 78)
+;=>89
 
 
 ;; Testing if form
@@ -29,6 +29,8 @@
 ;=>7
 (if false 7 8)
 ;=>8
+(if false 7 false)
+;=>false
 (if true (+ 1 7) (+ 1 8))
 ;=>8
 (if false (+ 1 7) (+ 1 8))
@@ -36,8 +38,6 @@
 (if nil 7 8)
 ;=>8
 (if 0 7 8)
-;=>7
-(if "" 7 8)
 ;=>7
 (if (list) 7 8)
 ;=>7
@@ -49,6 +49,8 @@
 
 ;; Testing 1-way if form
 (if false (+ 1 7))
+;=>nil
+(if nil 8)
 ;=>nil
 (if nil 8 7)
 ;=>7
@@ -108,18 +110,6 @@
 ;=>true
 (= 1 0)
 ;=>false
-(= "" "")
-;=>true
-(= "abc" "abc")
-;=>true
-(= "abc" "")
-;=>false
-(= "" "abc")
-;=>false
-(= "abc" "def")
-;=>false
-(= "abc" "ABC")
-;=>false
 (= true true)
 ;=>true
 (= false false)
@@ -139,9 +129,7 @@
 ;=>false
 (= (list) 0)
 ;=>false
-(= (list) "")
-;=>false
-(= "" (list))
+(= (list nil) (list))
 ;=>false
 
 
@@ -172,15 +160,15 @@
 ;=>15
 
 ;; Testing do form
-(do (prn "prn output1"))
-;/"prn output1"
+(do (prn 101))
+;/101
 ;=>nil
-(do (prn "prn output2") 7)
-;/"prn output2"
+(do (prn 102) 7)
+;/102
 ;=>7
-(do (prn "prn output1") (prn "prn output2") (+ 1 2))
-;/"prn output1"
-;/"prn output2"
+(do (prn 101) (prn 102) (+ 1 2))
+;/101
+;/102
 ;=>3
 
 (do (def! a 6) 7 (+ a 8))
@@ -211,14 +199,42 @@ a
 ;=>2
 (fib 4)
 ;=>5
-;;; Too slow for bash, erlang, make and miniMAL
-;;;(fib 10)
-;;;;=>89
+
+
+;; Testing recursive function in environment.
+(let* (cst (fn* (n) (if (= n 0) nil (cst (- n 1))))) (cst 1))
+;=>nil
+(let* (f (fn* (n) (if (= n 0) 0 (g (- n 1)))) g (fn* (n) (f n))) (f 2))
+;=>0
 
 
 ;>>> deferrable=True
 ;;
 ;; -------- Deferrable Functionality --------
+
+;; Testing if on strings
+
+(if "" 7 8)
+;=>7
+
+;; Testing string equality
+
+(= "" "")
+;=>true
+(= "abc" "abc")
+;=>true
+(= "abc" "")
+;=>false
+(= "" "abc")
+;=>false
+(= "abc" "def")
+;=>false
+(= "abc" "ABC")
+;=>false
+(= (list) "")
+;=>false
+(= "" (list))
+;=>false
 
 ;; Testing variable length arguments
 
@@ -406,9 +422,6 @@ nil
 ;/\(1 2 abc "\) def
 ;=>nil
 
-;>>> optional=True
-;;
-;; -------- Optional Functionality --------
 
 ;; Testing keywords
 (= :abc :abc)
@@ -417,6 +430,8 @@ nil
 ;=>false
 (= :abc ":abc")
 ;=>false
+(= (list :abc) (list :abc))
+;=>true
 
 ;; Testing vector truthiness
 (if [] 7 8)
@@ -450,6 +465,8 @@ nil
 (= [] (list))
 ;=>true
 (= [7 8] [7 8])
+;=>true
+(= [:abc] [:abc])
 ;=>true
 (= (list 1 2) [1 2])
 ;=>true

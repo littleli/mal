@@ -18,9 +18,9 @@ oo::class create Reader {
 }
 
 proc tokenize str {
-    set re {[\s,]*(~@|[\[\]\{\}()'`~^@]|\"(?:\\.|[^\\\"])*\"|;.*|[^\s\[\]\{\}('\"`~^@,;)]*)}
+    set re {[\s,]*(~@|[\[\]\{\}()'`~^@]|\"(?:\\.|[^\\\"])*\"?|;[^\n]*|[^\s\[\]\{\}('\"`~^@,;)]*)}
     set tokens {}
-    foreach {_ capture} [regexp -line -all -inline $re $str] {
+    foreach {_ capture} [regexp -all -inline $re $str] {
         if {[string length $capture] > 0 && [string range $capture 0 0] != ";"} {
             lappend tokens $capture
         }
@@ -83,7 +83,9 @@ proc read_atom {reader} {
         ^true$     { return $::mal_true }
         ^false$    { return $::mal_false }
         ^:         { return [keyword_new [parse_keyword $token]] }
-        ^\".*\"$   { return [string_new [parse_string $token]] }
+        ^\"(\\\\.|[^\\\\\"])*\"$
+	           { return [string_new [parse_string $token]] }
+        ^\"        { error "expected '\"', got EOF" }
         default    { return [symbol_new $token] }
     }
 }

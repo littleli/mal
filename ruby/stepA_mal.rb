@@ -117,7 +117,7 @@ def EVAL(ast, env)
             if a2 && a2[0] == :"catch*"
                 return EVAL(a2[2], Env.new(env, [a2[1]], [exc]))
             else
-                raise esc
+                raise exc
             end
         end
     when :do
@@ -167,11 +167,8 @@ repl_env.set(:"*ARGV*", List.new(ARGV.slice(1,ARGV.length) || []))
 # core.mal: defined using the language itself
 RE["(def! *host-language* \"ruby\")"]
 RE["(def! not (fn* (a) (if a false true)))"]
-RE["(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \")\")))))"]
+RE["(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))"]
 RE["(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))"]
-RE["(def! *gensym-counter* (atom 0))"]
-RE["(def! gensym (fn* [] (symbol (str \"G__\" (swap! *gensym-counter* (fn* [x] (+ 1 x)))))))"]
-RE["(defmacro! or (fn* (& xs) (if (empty? xs) nil (if (= 1 (count xs)) (first xs) (let* (condvar (gensym)) `(let* (~condvar ~(first xs)) (if ~condvar ~condvar (or ~@(rest xs)))))))))"]
 
 if ARGV.size > 0
     RE["(load-file \"" + ARGV[0] + "\")"]

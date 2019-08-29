@@ -542,7 +542,7 @@ eval:
         ; Check type
         mov al, BYTE [rsi]
         cmp al, maltype_empty_list
-        je .return_nil
+        je .empty_list           ; empty list, return unchanged
 
         and al, container_mask
         cmp al, container_list
@@ -1236,7 +1236,7 @@ eval:
         mov [rax + Cons.typecdr], BYTE content_pointer
         
         mov [r13 + Cons.cdr], rax ; Append to list
-        mov r14, rax
+        mov r14, rax              ; R14 contains last cons in list
         
         push rax
         mov rsi, r15
@@ -1314,18 +1314,20 @@ eval:
         je .list_got_args
         
         ; No arguments
-        
         push rbx                ; Function object
-        
-        mov rsi, rax            ; List with function first
-        call release_object     ; Can be freed now
+        push rax                ; List with function first
 
         ; Create an empty list for the arguments
         call alloc_cons
         mov [rax], BYTE maltype_empty_list
+        mov rsi, rax            ; Argument list into RSI
+
+        pop rax                 ; list, function first
+        ;;  Put new empty list onto end of original list
+        mov [rax + Cons.typecdr], BYTE content_pointer
+        mov [rax + Cons.cdr], rsi
         
         pop rbx
-        mov rsi, rax
         jmp  .list_function_call
 .list_got_args:
         mov rsi, [rax + Cons.cdr] ; Rest of list
@@ -1365,7 +1367,10 @@ eval:
         print_str_mac eval_list_not_function
         pop rsi
         jmp error_throw
-        
+
+.empty_list:
+        mov rax, rsi
+        jmp .return
 
 ;; Applies a user-defined function
 ;;

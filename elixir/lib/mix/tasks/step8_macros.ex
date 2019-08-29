@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Step8Macros do
     read_eval_print("""
       (def! load-file
         (fn* (f)
-          (eval (read-string (str "(do " (slurp f) ")")))))
+          (eval (read-string (str "(do " (slurp f) "\nnil)")))))
       """, env)
 
     # cond
@@ -40,17 +40,6 @@ defmodule Mix.Tasks.Step8Macros do
                 (nth xs 1)
                 (throw \"odd number of forms to cond\"))
               (cons 'cond (rest (rest xs)))))))"
-      """, env)
-
-    # or:
-    read_eval_print("""
-      (defmacro! or
-        (fn* (& xs)
-          (if (empty? xs)
-            nil
-            (if (= 1 (count xs))
-              (first xs)
-              `(let* (or_FIXME ~(first xs)) (if or_FIXME or_FIXME (or ~@(rest xs))))))))
       """, env)
 
     Mal.Env.set(env, "eval", %Function{value: fn [ast] ->

@@ -44,7 +44,7 @@ class Reader {
 
     static function read_atom(rdr:Reader) {
         var re_int = ~/^-?[0-9][0-9]*$/;
-        var re_str = ~/^".*"$/;
+        var re_str = ~/^"(?:\\.|[^\\"])*"$/;
         var re_str_bad = ~/^".*$/;
         var token = rdr.next();
         return switch (token) {
@@ -73,7 +73,7 @@ class Reader {
                                 "\n"),
                               "\""),
                             "\\"));
-            case _ if (re_str.match(token)):
+            case _ if (re_str_bad.match(token)):
                 throw 'expected \'"\', got EOF';
             case _:
                 MalSymbol(token);

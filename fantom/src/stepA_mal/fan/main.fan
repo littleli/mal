@@ -97,6 +97,8 @@ class Main
         case "macroexpand":
           return macroexpand(astList[1], env)
         case "try*":
+          if (astList.count < 3)
+            return EVAL(astList[1], env)
           MalVal exc := MalNil.INSTANCE
           try
             return EVAL(astList[1], env)
@@ -162,11 +164,8 @@ class Main
     // core.mal: defined using the language itself
     REP("(def! *host-language* \"fantom\")", repl_env)
     REP("(def! not (fn* (a) (if a false true)))", repl_env)
-    REP("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \")\")))))", repl_env)
+    REP("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))", repl_env)
     REP("(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))", repl_env)
-    REP("(def! *gensym-counter* (atom 0))", repl_env)
-    REP("(def! gensym (fn* [] (symbol (str \"G__\" (swap! *gensym-counter* (fn* [x] (+ 1 x)))))))", repl_env)
-    REP("(defmacro! or (fn* (& xs) (if (empty? xs) nil (if (= 1 (count xs)) (first xs) (let* (condvar (gensym)) `(let* (~condvar ~(first xs)) (if ~condvar ~condvar (or ~@(rest xs)))))))))", repl_env)
 
     if (!args.isEmpty)
     {

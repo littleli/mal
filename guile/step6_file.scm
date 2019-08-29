@@ -131,7 +131,8 @@
 ;; initialization
 ((*toplevel* 'set) 'eval (make-func (lambda (ast) (EVAL ast *toplevel*))))
 ((*toplevel* 'set) '*ARGV* '())
-(EVAL-string "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \")\")))))")
+(EVAL-string "(def! not (fn* (x) (if x false true)))")
+(EVAL-string "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))")
 
 (let ((args (cdr (command-line))))
   (cond

@@ -9,13 +9,14 @@ STEPS3_A = step3_env.bas $(STEPS4_A)
 STEPS1_A = step1_read_print.bas step2_eval.bas $(STEPS3_A)
 STEPS0_A = step0_repl.bas $(STEPS1_A)
 
+all: $(if $(filter qbasic,$(basic_MODE)),$(subst .bas,,$(STEPS0_A)),$(STEPS0_A))
+
 $(STEPS0_A): readline.in.bas readline_line.in.bas readline_char.in.bas
 $(STEPS1_A): debug.in.bas mem.in.bas types.in.bas reader.in.bas printer.in.bas
 $(STEPS3_A): env.in.bas
 $(STEPS4_A): core.in.bas
 
 
-all: $(STEPS0_A)
 
 step%.bas: step%.in.bas
 	./basicpp.py $(BASICPP_OPTS) $< > $@
@@ -54,21 +55,8 @@ mal.d64: mal.prg .args.mal.prg core.mal.prg
 
 # Clean and Stats rules
 
-.PHONY: clean stats
+.PHONY: clean
 
 clean:
 	rm -f $(STEPS0_A) $(subst .bas,,$(STEPS0_A)) *.d64 *.prg qb64
 	rm -rf ./internal
-
-
-SOURCES_LISP = env.in.bas core.in.bas stepA_mal.in.bas
-SOURCES = readline.in.bas readline_line.in.bas readline_char.in.bas \
-	  types.in.bas reader.in.bas printer.in.bas $(SOURCES_LISP)
-
-stats: $(SOURCES)
-	@wc $^
-	@printf "%5s %5s %5s %s\n" `grep -E "^[[:space:]]*#|^[[:space:]]*REM |^[[:space:]]*$$" $^ | wc` "[comments/blanks]"
-stats-lisp: $(SOURCES_LISP)
-	@wc $^
-	@printf "%5s %5s %5s %s\n" `grep -E "^[[:space:]]*#|^[[:space:]]*REM |^[[:space:]]*$$" $^ | wc` "[comments/blanks]"
-

@@ -19,7 +19,7 @@ void setupEnv(List<String> argv) {
 
   rep('(def! not (fn* (a) (if a false true)))');
   rep("(def! load-file "
-      "  (fn* (f) (eval (read-string (str \"(do \" (slurp f) \")\")))))");
+      "  (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))");
   rep("(defmacro! cond "
       "  (fn* (& xs) (if (> (count xs) 0) "
       "    (list 'if (first xs) "
@@ -27,12 +27,6 @@ void setupEnv(List<String> argv) {
       "          (nth xs 1) "
       "          (throw \"odd number of forms to cond\")) "
       "      (cons 'cond (rest (rest xs)))))))");
-  rep("(defmacro! or "
-      "  (fn* (& xs) (if (empty? xs) nil "
-      "    (if (= 1 (count xs)) "
-      "      (first xs) "
-      "      `(let* (or_FIXME ~(first xs)) "
-      "         (if or_FIXME or_FIXME (or ~@(rest xs))))))))");
 }
 
 /// Returns `true` if [ast] is a macro call.
@@ -194,8 +188,7 @@ MalType EVAL(MalType ast, Env env) {
             ast = quasiquote(args.first);
             continue;
           } else if (symbol.value == 'macroexpand') {
-            ast = macroexpand(args.first, env);
-            continue;
+            return macroexpand(args.first, env);
           } else if (symbol.value == 'try*') {
             var body = args.first;
             if (args.length < 2) {
@@ -212,6 +205,8 @@ MalType EVAL(MalType ast, Env env) {
               MalType exceptionValue;
               if (e is MalException) {
                 exceptionValue = e.value;
+              } else if (e is reader.ParseException) {
+                exceptionValue = new MalString(e.message);
               } else {
                 exceptionValue = new MalString(e.toString());
               }

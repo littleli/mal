@@ -1,13 +1,13 @@
 clojure_MODE ?= clj
 SOURCES_UTIL = src/mal/readline.$(clojure_MODE)
-SOURCES_BASE = $(SOURCES_UTIL) src/mal/printer.cljc
+SOURCES_BASE = $(SOURCES_UTIL) src/mal/reader.cljc src/mal/printer.cljc
 SOURCES_LISP = src/mal/env.cljc src/mal/core.cljc src/mal/stepA_mal.cljc
 SRCS = $(SOURCES_BASE) src/mal/env.cljc src/mal/core.cljc
 SOURCES = $(SOURCES_BASE) $(SOURCES_LISP)
 
 DEPS = $(if $(filter cljs,$(clojure_MODE)),node_modules,deps)
 
-dist: $(if $(filter cljs,$(clojure_MODE)),,mal.jar mal)
+dist: $(if $(filter cljs,$(clojure_MODE)),node_modules,mal.jar mal)
 
 deps:
 	lein deps
@@ -34,12 +34,3 @@ node_modules:
 
 clean:
 	rm -rf target/ mal.jar mal
-
-.PHONY: stats
-
-stats: $(SOURCES)
-	@wc $^
-	@printf "%5s %5s %5s %s\n" `grep -E "^[[:space:]]*;|^[[:space:]]*$$" $^ | wc` "[comments/blanks]"
-stats-lisp: $(SOURCES_LISP)
-	@wc $^
-	@printf "%5s %5s %5s %s\n" `grep -E "^[[:space:]]*;|^[[:space:]]*$$" $^ | wc` "[comments/blanks]"
